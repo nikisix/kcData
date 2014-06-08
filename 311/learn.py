@@ -11,6 +11,7 @@ from pylab import *
 
 d = pd.read_csv('data/311data', nrows=1000) #limit to 1k rows for testing
 d = pd.DataFrame(d,columns=['creation_date', 'closed_date', 'latitude', 'longitude', 'request_type'])
+d.sort(columns=['closed_date'], ascending=True, inplace=True)
 
 #-1 is the value that find returns if it doesn't find the string
 #Filter the Dataset. Remove all rows without 'Water' in their request_type
@@ -35,23 +36,28 @@ def getLatsAndLongsByTimePercentage(time, num_points = -12):
     global data
     if (num_points == -12): num_points = len(data) / math.sqrt(len(data))
     if (time > 1.0) or (time < 0.0): return 0
-    start_index = len(d) * time
-    stop_index  = start_index + num_points
+    start_index = int( len(d) * time )
+    stop_index  = int( start_index + num_points )
+    start_date = d.closed_date[start_index]
+    stop_date  = d.closed_date[stop_index]
     lats = pd.DataFrame(d, columns=['latitude']).values[start_index : stop_index]
     longs= pd.DataFrame(d, columns=['longitude']).values[start_index : stop_index]
-    return lats,longs
+    return lats,longs,start_date,stop_date
 
 # HEATMAP from http://matplotlib.org/basemap/users/examples.html
 
-p = plt.figure(figsize=(24,12))
+plt.figure(figsize=(24,12))
+axis1 = subplot(111)
 map = Basemap(projection='merc', lat_0=39, lon_0=-94,
-    resolution = 'l', area_thresh = 3000.0,
+    resolution = 'c', area_thresh = 100000.0,
     llcrnrlon=-95, llcrnrlat=38.75,
     urcrnrlon=-94, urcrnrlat=39.5)
- 
+
+axis1.text(0.95, 0.01, 'start_date and stop_date',
+    verticalalignment='bottom', horizontalalignment='right',
+    transform=axis1.transAxes, color='cyan', fontsize=15)
+
 #map.drawcounties()
-#map.drawstates()
-#map.drawrivers()
 
 t0 = .5
 slider_min = 0.0
@@ -61,26 +67,38 @@ lats_lons = getLatsAndLongsByTimePercentage(t0)
 lats = lats_lons[0]
 lons = lats_lons[1]
 x,y = map(lons, lats)
-map.plot(x, y, 'ro',fillstyle='none', markersize=5)
+map.plot(x, y, 'ro',fillstyle='none', markersize=8)
 
 #---Slider Code--- 
-slider = subplot(111)                                                               
 subplots_adjust(left=0.25, bottom=0.25)                                         
 slider_color = 'lightgoldenrodyellow'                                                
 slider_dimens  = axes([0.25, 0.15, 0.65, 0.03], axisbg=slider_color)                         
 
 slider_time = Slider(slider_dimens, 'Time', slider_min, slider_max, valinit=t0)
+slider_time.label='slider label'
 
 def update(val):
+    subplot(111)
+    plt.cla()
     time_percentage = val
     lats_lons = getLatsAndLongsByTimePercentage(time_percentage)
     lats = lats_lons[0]
     lons = lats_lons[1]
+    start_date = lats_lons[2]
+    stop_date  = lats_lons[3]
+    axis1.text(0.95, 0.01, start_date+'  '+stop_date,
+        verticalalignment='bottom', horizontalalignment='right',
+        transform=axis1.transAxes, color='cyan', fontsize=15)
     x,y = map(lons, lats)
-    map.plot(x, y, 'ro',fillstyle='none', markersize=5)
-    #plt.draw()
-    #draw()
-    p.draw(map)
+    map.plot(x, y, 'ro',fillstyle='none', markersize=8)
 slider_time.on_changed(update)
+
+resetax = axes([0.8, 0.025, 0.1, 0.04])                                         
+button = Button(resetax, 'Draw Borders', color=slider_color, hovercolor='0.975')            
+def reset(event):                                                               
+    map.drawstates()
+    map.drawcounties()
+    map.drawrivers()
+button.on_clicked(reset)
 
 plt.show()
