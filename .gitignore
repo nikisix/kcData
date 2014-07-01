@@ -3,3 +3,4 @@ data/
 examples/
 commute.csv
 notes.txt
+*.png
