@@ -322,7 +322,7 @@ geo_map = Basemap(projection='merc', lat_0=39, lon_0=-94.5,
     llcrnrlon=-95, llcrnrlat=38.7,
     urcrnrlon=-94, urcrnrlat=39.6)
 
-def sample_points(sector = 1, num_calls = 2, grid = grid1d):
+def generate_samples(sector = 1, num_calls = 1, grid = grid1d):
     conditioned_grid = condition_dict_grid(grid1d, sector=sector, num_calls = num_calls)
     cgrid_upsampled = augment_grid( sector, num_calls, grid_real= conditioned_grid)
 
@@ -338,9 +338,10 @@ def inc_dict(dictionary, key):
     else: dictionary[key] = 1
     
 call_dict={}
-call_dict[1]=2 #keeps track of sector and num_calls on the grid
+for i in range(N_STEPS**2): call_dict[i]=0
+call_dict[1]=0 #keeps track of sector and num_calls on the grid
 
-xpts, ypts, xpts_sampled, ypts_sampled = sample_points(sector=1, num_calls=2, grid=grid1d)
+xpts, ypts, xpts_sampled, ypts_sampled = generate_samples(sector=1, num_calls=2, grid=grid1d)
 
 """
 Graph a heatmap of the data by sector
@@ -349,44 +350,84 @@ May be conditioned on getting an exact number of calls in a sector
 
 from matplotlib.widgets import Button
 
-def init_plot():
-    plt.figure(figsize=(24,12))
-    plt.axes().set_axis_bgcolor('grey')
-    img=mpimg.imread('kcmo1.png')
-    left = np.min(xpts_sampled); right = np.max(xpts_sampled); bottom = np.min(ypts_sampled); top = np.max(ypts_sampled)
-    imgplot = plt.imshow(img, extent=[left, right, bottom, top])
-    size = ( np.abs(right-left) + np.abs(top-bottom) ) / (2*20)
-    real_points    = plt.axes().scatter(x=xpts, y=ypts, alpha=.4, s=size, c='cyan', label='real data')
-    sampled_points = plt.axes().scatter(x=xpts_sampled, y=ypts_sampled, alpha=.1, s=size, c = 'violet', label='sampled data')
-    plt.axes().legend(('real data', 'sampled data'), loc='lower right', markerscale=.2, framealpha=.7 )
+plt.figure(figsize=(24,12))
+plt.axes().set_axis_bgcolor('grey')
+img=mpimg.imread('kcmo1.png')
+left = np.min(xpts_sampled); right = np.max(xpts_sampled); bottom = np.min(ypts_sampled); top = np.max(ypts_sampled)
+imgplot = plt.imshow(img, extent=[left, right, bottom, top])
+size = ( np.abs(right-left) + np.abs(top-bottom) ) / (2*20)
+real_points = plt.axes().scatter(x=xpts, y=ypts, alpha=.4, s=size, c='cyan', label='real data')
+sampled_points = plt.axes().scatter(x=xpts_sampled, y=ypts_sampled, alpha=.1, s=size, c = 'violet', label='sampled data')
+plt.axes().legend(('real data', 'sampled data'), loc='lower right', markerscale=.2, framealpha=.7 )
 
-    #Reset Button
-    #*rect* = [left, bottom, width, height] 
-    reset_axis = plt.axes([0.8, 0.15, 0.1, 0.04], alpha = .2) #TODO alpha here not working 
-    reset_button = Button(ax=reset_axis, label='Reset', color='lightblue' , hovercolor='0.975') 
+#Call_Dictionary Display axis
+s = ''
+call_dict_axis = plt.axes([0.8, .615, 0.1, 0.3], alpha = .2)
+call_dict_text = call_dict_axis.text(.7, .415, s)
 
-    #Button: add to square 1
-    axis1 = plt.axes([0.2, 0.35, 0.1, 0.04], alpha = .2) 
-    button1 = Button(ax=axis1, label='Inc1', color='lightblue' , hovercolor='0.975') 
+#Reset Button
+#*rect* = [left, bottom, width, height] 
+reset_axis = plt.axes([0.8, 0.15, 0.1, 0.04], alpha = .2) #TODO alpha here not working 
+reset_button = Button(ax=reset_axis, label='Reset', color='lightblue' , hovercolor='0.975') 
 
+#Button: add to square 1
+axis1 = plt.axes([0.2, 0.35, 0.1, 0.04], alpha = .2) 
+axis2 = plt.axes([0.2, 0.55, 0.1, 0.04], alpha = .2) 
+button1 = Button(ax=axis1, label='Inc1', color='lightblue' , hovercolor='0.975') 
+button2 = Button(ax=axis2, label='Inc2', color='lightblue' , hovercolor='0.975') 
 
 def clear_points():
-    real_points.remove()
-    sampled_points.remove()
-    
+    global real_points
+    global sampled_points
+    try:    sampled_points.remove()
+    except: pass
+    try:    real_points.remove()
+    except: pass
+
 def reset(event):                                                               
+    global call_dict
     clear_points()
     call_dict.clear()
-    #plt.clf() #clears whole figure
+    for i in range(N_STEPS**2): call_dict[i]=0
 
-def add1(event):                                                               
-    #TODO clear_points()
+def Inc1(event):                                                               
+    global call_dict
+    global call_dict_text
+    global real_points
+    global sampled_points
+    clear_points()
     inc_dict(call_dict, key=1)
-    xpts, ypts, xpts_sampled, ypts_sampled = sample_points(sector=1, num_calls=call_dict[1], grid=grid1d)
+    xpts, ypts, xpts_sampled, ypts_sampled = generate_samples(sector=3, num_calls=call_dict[1], grid=grid1d)
     real_points    = plt.axes().scatter(x=xpts, y=ypts, alpha=.4, s=size, c='cyan', label='real data')
     sampled_points = plt.axes().scatter(x=xpts_sampled, y=ypts_sampled, alpha=.1, s=size, c = 'violet', label='sampled data')
+    try:    call_dict_text.remove()    
+    except: pass
+    s = ''
+    for i in xrange(N_STEPS**2):
+        s += str(i) + ': ' + str(call_dict[i]) + '\n'
+    call_dict_axis = plt.axes([0.8, .615, 0.1, 0.3], alpha = .2)
+    call_dict_text = call_dict_axis.text(.7, .415, s)
+
+def Inc2(event):                                                               
+    global call_dict
+    global call_dict_text
+    global real_points
+    global sampled_points
+    clear_points()
+    inc_dict(call_dict, key=2)
+    xpts, ypts, xpts_sampled, ypts_sampled = generate_samples(sector=3, num_calls=call_dict[2], grid=grid1d)
+    real_points    = plt.axes().scatter(x=xpts, y=ypts, alpha=.4, s=size, c='cyan', label='real data')
+    sampled_points = plt.axes().scatter(x=xpts_sampled, y=ypts_sampled, alpha=.1, s=size, c = 'violet', label='sampled data')
+    try:    call_dict_text.remove()    
+    except: pass
+    s = ''
+    for i in xrange(N_STEPS**2):
+        s += str(i) + ': ' + str(call_dict[i]) + '\n'
+    call_dict_axis = plt.axes([0.8, .615, 0.1, 0.3], alpha = .2)
+    call_dict_text = call_dict_axis.text(.7, .415, s)
 
 reset_button.on_clicked(reset)
-button1.on_clicked(add1)
+button1.on_clicked(Inc1)
+button2.on_clicked(Inc2)
 
 plt.show()
