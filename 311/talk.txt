@@ -1,0 +1,31 @@
+__The talk__
+pipe story - nick
+
+statement - piero
+    311 data problem and enrichment
+
+setup - matt
+    shape files, centerlines, pipes
+
+grid - nick
+
+approach - piero
+    mixing in datasets
+    reducing calls, preventitive maintenence, social utility of no failure zzz
+
+solution - matt
+    tech, aws, big query, being a baws, website
+
+approach - nick
+    bayesian probs
+
+results - piero
+    errors, metrics, so what
+
+future - nick, matt
+    we scale to any city collecting basic 311 data
+    open data 500 & kcmo conversations
+    cron jobs, model, apply generated features to create probabilities
+    list top 100 most likely pipes to break
+
+    

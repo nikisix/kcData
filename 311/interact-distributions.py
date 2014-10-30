@@ -1,54 +1,8 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <rawcell>
-
-# ░█░█░█▀▀░█▀▄░█░█░█▀▄░█▀▀░▀█▀
-# ░█▀▄░█░░░█▀▄░█░█░█▀▄░▀▀█░░█░
-# ░▀░▀░▀▀▀░▀▀░░▀▀▀░▀░▀░▀▀▀░░▀░
 # Where will the next KC water pipe break?
 # 
-# Bayesian Statistical Modeling using:
-#  ▄▄▄  ▄▄▄ 
-#  ███  ███ 
-#  ████████ 
-#  ██ ██ ██ 
-#  ██ ▀▀ ██ 
-#  ██    ██ arkov
-#  ▀▀    ▀▀  
-#     ▄▄▄▄  
-#   ██▀▀▀▀█ 
-#  ██▀      
-#  ██       
-#  ██▄      
-#   ██▄▄▄▄█ hain
-#     ▀▀▀▀ 
-#  ▄▄▄  ▄▄▄ 
-#  ███  ███ 
-#  ████████ 
-#  ██ ██ ██ 
-#  ██ ▀▀ ██ 
-#  ██    ██ onte
-#  ▀▀    ▀▀
-#     ▄▄▄▄  
-#   ██▀▀▀▀█ 
-#  ██▀      
-#  ██       
-#  ██▄      
-#   ██▄▄▄▄█ arlo
-#     ▀▀▀▀  
-# 
+# Bayesian Statistical Modeling using MCMC
 # by: Nick Tomasino
 
-# <codecell>
-
-"""
- ⣏⡉ ⢹⠁ ⡇ 
- ⠧⠤ ⠸  ⠧⠤
-"""
-
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -66,7 +20,7 @@ import scipy.misc
 # from JSAnimation import IPython_display
 
 #d = pd.read_csv('data/311data') #full set
-d = pd.read_csv('data/311data', nrows=1000) #limit to 1k rows for testing
+d = pd.read_csv('data/311data', nrows=100) #limit to 1k rows for testing
 d = pd.DataFrame(d, columns=['creation_date', 'closed_date', 'latitude', 'longitude', 'request_type'])
 #d.sort(columns=['closed_date'], ascending=True, inplace=True) #do this after filtering to save on cycles
 
@@ -90,18 +44,7 @@ del d #relax d's memory usage
 data.sort(columns=['closed_date'], ascending=True, inplace=True)
 dt_index = pd.DatetimeIndex(pd.to_datetime(data.closed_date))
 data = data.set_index(dt_index)
-#data['2009-12-31':'2010-1-31'] #works :)
 
-# <codecell>
-
-"""
- ⢹⠁ ⢀⡀ ⢀⣀ ⢀⡀ ⡇ ⢀⣀ ⣰⡀ ⢀⡀
- ⠸  ⠣⠭ ⠭⠕ ⠣⠭ ⠣ ⠣⠼ ⠘⠤ ⠣⠭
-"""
-#xlim=(38.75, 39.5), latitudes
-#ylim=(-95, -94)),   longitudes
-#    llcrnrlon=-94.75, llcrnrlat=38.8,
-#    urcrnrlon=-94.3, urcrnrlat=39.35)
 """
 LAT_BEGIN = 38.75
 LAT_END   = 39.5
@@ -193,10 +136,6 @@ grid2d = grid2d_from_data(data, grid2d=grid2d)
 
 # <codecell>
 
-"""
- ⣏⡱ ⢀⣀ ⡀⢀ ⢀⡀ ⢀⣀ ⠄ ⢀⣀ ⣀⡀   ⡷⢾ ⢀⡀ ⢀⣸ ⢀⡀ ⡇ ⠄ ⣀⡀ ⢀⡀
- ⠧⠜ ⠣⠼ ⣑⡺ ⠣⠭ ⠭⠕ ⠇ ⠣⠼ ⠇⠸   ⠇⠸ ⠣⠜ ⠣⠼ ⠣⠭ ⠣ ⠇ ⠇⠸ ⣑⡺
-"""
 #uniform prior (all ones), either this or discrete_uniform
 #unif = pm.DiscreteUniform('unif', 0, 1, size=[1,N_STEPS**2] )
 #alpha = unif.random()
@@ -242,7 +181,7 @@ model = pm.Model([multi, dirich, poisson, expon], name = 'model')
 # <codecell>
 
 mcmc = pm.MCMC(model)
-mcmc.sample(20000, 10000, 1)
+mcmc.sample(200, 100, 1)
 
 # <codecell>
 
@@ -265,7 +204,7 @@ model1 = pm.Model([multi1, dirich, poisson1, expon], name = 'model1')
 # <codecell>
 
 mcmc1 = pm.MCMC(model1)
-mcmc1.sample(20000, 10000, 1)
+mcmc1.sample(200, 100, 1)
 #dirich_samples = mcmc.trace('dirich')[:]
 #expon_sapmples = mcmc.trace('expon')[:]
 
@@ -275,10 +214,6 @@ multi1_samples = mcmc1.trace('multi1')[:]
 
 # <codecell>
 
-"""
- ⡇⢸ ⣀⡀   ⢎⡑ ⢀⣀ ⣀⣀  ⣀⡀ ⡇ ⠄ ⣀⡀ ⢀⡀
- ⠣⠜ ⡧⠜   ⠢⠜ ⠣⠼ ⠇⠇⠇ ⡧⠜ ⠣ ⠇ ⠇⠸ ⣑⡺
-"""
 def add_noise(multi_sample):
     normal = pm.Normal(name='normal', mu=0, tau=1, size=len(multi_sample))
     sample = normal.random() + multi_sample
@@ -329,11 +264,7 @@ def augment_grid(sector, num_calls, samples_per_iter = 100, min_support = 20, gr
             grid1d_artificial.extend(  condition_grid( artificial_samples, sector, num_calls )  )
     return grid1d_artificial
 
-# <codecell>
-
 """
- ⡎⠑ ⡀⣀ ⠄ ⢀⣸         ⠈⢢   ⡎⠑ ⢀⡀ ⢀⡀
- ⠣⠝ ⠏  ⠇ ⠣⠼   ⠉⠉ ⠉⠉ ⢀⠜   ⠣⠝ ⠣⠭ ⠣⠜
 GRIDSQUARES -> LATS, LONS
 .--> (x) == lon_steps
 | 
@@ -383,53 +314,79 @@ def grid1dToLatsLonsSize_scatter(grid):
             
             lats.append(np.random.normal(loc=lat_mean, scale=lat_sd ))
             lons.append(np.random.normal(loc=lon_mean, scale=lat_sd ))
-            #lats.append(lat_mean) #works
-            #lons.append(lon_mean)
             sizes.append(num_calls)
     return lats, lons, sizes
 
-# <codecell>
+geo_map = Basemap(projection='merc', lat_0=39, lon_0=-94.5,
+    resolution = 'l', area_thresh = 3000.0,
+    llcrnrlon=-95, llcrnrlat=38.7,
+    urcrnrlon=-94, urcrnrlat=39.6)
+
+def sample_points(sector = 1, num_calls = 2, grid = grid1d):
+    conditioned_grid = condition_dict_grid(grid1d, sector=sector, num_calls = num_calls)
+    cgrid_upsampled = augment_grid( sector, num_calls, grid_real= conditioned_grid)
+
+    lats, lons, sizes = grid1dToLatsLonsSize_scatter(conditioned_grid)
+    xpts, ypts = geo_map(lons, lats)
+
+    lats, lons, sizes = grid1dToLatsLonsSize_scatter(cgrid_upsampled)
+    xpts_sampled, ypts_sampled = geo_map(lons, lats)
+    return xpts, ypts, xpts_sampled, ypts_sampled
+
+def inc_dict(dictionary, key):
+    if dictionary.__contains__(key):     dictionary[key] += 1
+    else: dictionary[key] = 1
+    
+call_dict={}
+call_dict[1]=2 #keeps track of sector and num_calls on the grid
+
+xpts, ypts, xpts_sampled, ypts_sampled = sample_points(sector=1, num_calls=2, grid=grid1d)
 
 """
 Graph a heatmap of the data by sector
 May be conditioned on getting an exact number of calls in a sector
 """
-map = Basemap(projection='merc', lat_0=39, lon_0=-94.5,
-    resolution = 'l', area_thresh = 3000.0,
-    llcrnrlon=-95, llcrnrlat=38.7,
-    urcrnrlon=-94, urcrnrlat=39.6)
 
-sector = 0
-num_calls = 2
-conditioned_grid = condition_dict_grid(grid1d, sector=sector, num_calls = num_calls)
-cgrid_upsampled = augment_grid( sector, num_calls, grid_real= conditioned_grid)
+from matplotlib.widgets import Button
 
-lats, lons, sizes = grid1dToLatsLonsSize_scatter(grid1d)
-x, y = map(lons, lats)
+def init_plot():
+    plt.figure(figsize=(24,12))
+    plt.axes().set_axis_bgcolor('grey')
+    img=mpimg.imread('kcmo1.png')
+    left = np.min(xpts_sampled); right = np.max(xpts_sampled); bottom = np.min(ypts_sampled); top = np.max(ypts_sampled)
+    imgplot = plt.imshow(img, extent=[left, right, bottom, top])
+    size = ( np.abs(right-left) + np.abs(top-bottom) ) / (2*20)
+    real_points    = plt.axes().scatter(x=xpts, y=ypts, alpha=.4, s=size, c='cyan', label='real data')
+    sampled_points = plt.axes().scatter(x=xpts_sampled, y=ypts_sampled, alpha=.1, s=size, c = 'violet', label='sampled data')
+    plt.axes().legend(('real data', 'sampled data'), loc='lower right', markerscale=.2, framealpha=.7 )
 
-lats, lons, sizes = grid1dToLatsLonsSize_scatter(conditioned_grid)
-xpts, ypts = map(lons, lats)
+    #Reset Button
+    #*rect* = [left, bottom, width, height] 
+    reset_axis = plt.axes([0.8, 0.15, 0.1, 0.04], alpha = .2) #TODO alpha here not working 
+    reset_button = Button(ax=reset_axis, label='Reset', color='lightblue' , hovercolor='0.975') 
 
-lats, lons, sizes = grid1dToLatsLonsSize_scatter(cgrid_upsampled)
-xpts_sampled, ypts_sampled = map(lons, lats)
+    #Button: add to square 1
+    axis1 = plt.axes([0.2, 0.35, 0.1, 0.04], alpha = .2) 
+    button1 = Button(ax=axis1, label='Inc1', color='lightblue' , hovercolor='0.975') 
 
 
-plt.figure(figsize=(24,12))
-ax = plt.axes()
-ax.set_axis_bgcolor('grey')
-img=mpimg.imread('kcmo1.png')
-#extent = [left, right, bottom, top]
-left = np.min(xpts_sampled); right = np.max(xpts_sampled); bottom = np.min(ypts_sampled); top = np.max(ypts_sampled)
-imgplot = plt.imshow(img, extent=[left, right, bottom, top])
-size = ( np.abs(right-left) + np.abs(top-bottom) ) / (2*20)
-ax.scatter(x=xpts, y=ypts, alpha=.4, s=size, c='green', label='real data')
-ax.scatter(x=xpts_sampled, y=ypts_sampled, alpha=.1, s=size, c = 'violet', label='sampled data')
-ax.legend(('real data', 'sampled data'), loc='lower right', markerscale=.2, framealpha=.7 )
-plt.show()
-
-resetax = axes([0.8, 0.025, 0.1, 0.04])                                         
-button = Button(resetax, 'Draw Borders', color=slider_color, hovercolor='0.975')            
-def reset(event):                                                               
+def clear_points():
+    real_points.remove()
+    sampled_points.remove()
     
-button.on_clicked(reset)
+def reset(event):                                                               
+    clear_points()
+    call_dict.clear()
+    #plt.clf() #clears whole figure
 
+def add1(event):                                                               
+    #TODO clear_points()
+    inc_dict(call_dict, key=1)
+    xpts, ypts, xpts_sampled, ypts_sampled = sample_points(sector=1, num_calls=call_dict[1], grid=grid1d)
+    real_points    = plt.axes().scatter(x=xpts, y=ypts, alpha=.4, s=size, c='cyan', label='real data')
+    sampled_points = plt.axes().scatter(x=xpts_sampled, y=ypts_sampled, alpha=.1, s=size, c = 'violet', label='sampled data')
+
+reset_button.on_clicked(reset)
+button1.on_clicked(add1)
+
+plt.show()
