@@ -1,6 +1,7 @@
 # Where will the next KC water pipe break?
 # 
 # Bayesian Statistical Modeling using MCMC
+# Scenario Exploration
 # by: Nick Tomasino
 
 import matplotlib as mpl
