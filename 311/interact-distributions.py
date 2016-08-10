@@ -173,7 +173,7 @@ model = pm.Model([multi, dirich], name = 'model')
 """
 
 #similar to the poisson's 'value =' except each grid get's it's own daily count, 
-#instead of adding all of the grid-squares together
+#instead of adding all of the grid-squares together (no np.sum() here)
 multi = pm.Multinomial('multi', p=dirich, observed=True, 
                         n =  poisson, 
                         value = [ grid1d.values()[i] for i in range( 0, len(grid1d.values()) ) ] )
